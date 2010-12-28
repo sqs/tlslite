@@ -74,11 +74,6 @@ def clientTest(address, dir):
             badFault = True
         connection.sock.close()
 
-    print "Test 3 - good SRP"
-    connection = connect()
-    connection.handshakeClientSRP("test", "password")
-    connection.close()
-
     print "Test 4 - SRP faults"
     for fault in Fault.clientSrpFaults + Fault.genericFaults:
         connection = connect()
@@ -440,19 +435,6 @@ def serverTest(address, dir):
         except:
             pass
         connection.sock.close()
-
-    print "Test 3 - good SRP"
-    #verifierDB = tlslite.VerifierDB(os.path.join(dir, "verifierDB"))
-    #verifierDB.open()
-    verifierDB = VerifierDB()
-    verifierDB.create()
-    entry = VerifierDB.makeVerifier("test", "password", 1536)
-    verifierDB["test"] = entry
-
-    connection = connect()
-    connection.handshakeServer(verifierDB=verifierDB)
-    connection.close()
-    connection.sock.close()
 
     print "Test 4 - SRP faults"
     for fault in Fault.clientSrpFaults + Fault.genericFaults:

@@ -17,15 +17,15 @@ class TestSRP(unittest.TestCase):
         self.verifierDB.create()
         entry = VerifierDB.makeVerifier("test", "password", 1536)
         self.verifierDB["test"] = entry        
-    
-    def test_good_srp(self):
-        def server_good_srp():
-            sc = self.server.connect()
-            sc.handshakeServer(verifierDB=self.verifierDB)
-            sc.close()
-            sc.sock.close()
 
-        with ServerThread(self.server, server_good_srp):
+    def __server_srp(self):
+        sc = self.server.connect()
+        sc.handshakeServer(verifierDB=self.verifierDB)
+        sc.close()
+        sc.sock.close()
+        
+    def test_good_srp(self):
+        with ServerThread(self.server, self.__server_srp):
             cc = self.client.connect()
             cc.handshakeClientSRP("test", "password")
             cc.close()
@@ -45,3 +45,4 @@ class TestSRP(unittest.TestCase):
                 cc.handshakeClientSRP("test", "password")
                 cc.close()
                 cc.sock.close()
+        

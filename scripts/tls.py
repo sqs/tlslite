@@ -74,18 +74,6 @@ def clientTest(address, dir):
             badFault = True
         connection.sock.close()
 
-    print "Test 4 - SRP faults"
-    for fault in Fault.clientSrpFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeClientSRP("test", "password")
-            print "  Good Fault %s" % (Fault.faultNames[fault])
-        except TLSFaultError, e:
-            print "  BAD FAULT %s: %s" % (Fault.faultNames[fault], str(e))
-            badFault = True
-        connection.sock.close()
-
     print "Test 5 - good SRP: unknown_srp_username idiom"
     def srpCallback():
         return ("test", "password")
@@ -431,17 +419,6 @@ def serverTest(address, dir):
         connection.fault = fault
         try:
             connection.handshakeServer(sharedKeyDB=sharedKeyDB)
-            assert()
-        except:
-            pass
-        connection.sock.close()
-
-    print "Test 4 - SRP faults"
-    for fault in Fault.clientSrpFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeServer(verifierDB=verifierDB)
             assert()
         except:
             pass

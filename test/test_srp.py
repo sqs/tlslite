@@ -23,6 +23,19 @@ class TestSRP(unittest.TestCase):
         sc.handshakeServer(verifierDB=self.verifierDB)
         sc.close()
         sc.sock.close()
+
+    def __server_srp_x509(self):
+        mydir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
+        x509Cert = X509().parse(open(os.path.join(mydir, "serverX509Cert.pem")).read())
+        x509Chain = X509CertChain([x509Cert])
+        s = open(os.path.join(mydir, "serverX509Key.pem")).read()
+        x509Key = parsePEMKey(s, private=True)
+
+        sc = self.server.connect()
+        sc.handshakeServer(verifierDB=self.verifierDB, \
+                               certChain=x509Chain, privateKey=x509Key)
+        sc.close()
+        sc.sock.close()
         
     def test_good_srp(self):
         with ServerThread(self.server, self.__server_srp):
@@ -56,20 +69,7 @@ class TestSRP(unittest.TestCase):
             cc.sock.close()
 
     def test_srp_x509(self):
-        def server_srp_x509():
-            mydir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
-            x509Cert = X509().parse(open(os.path.join(mydir, "serverX509Cert.pem")).read())
-            x509Chain = X509CertChain([x509Cert])
-            s = open(os.path.join(mydir, "serverX509Key.pem")).read()
-            x509Key = parsePEMKey(s, private=True)
-
-            sc = self.server.connect()
-            sc.handshakeServer(verifierDB=self.verifierDB, \
-                               certChain=x509Chain, privateKey=x509Key)
-            sc.close()
-            sc.sock.close()
-
-        with ServerThread(self.server, server_srp_x509):
+        with ServerThread(self.server, self.__server_srp_x509):
             cc = self.client.connect()
             cc.handshakeClientSRP("test", "password")
             assert(isinstance(cc.session.serverCertChain, X509CertChain))

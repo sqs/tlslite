@@ -56,12 +56,6 @@ def clientTest(address, dir):
 
     badFault = False
 
-    print "Test 1 - good shared key"
-    connection = connect()
-    connection.handshakeClientSharedKey("shared", "key")
-    connection.close()
-    connection.sock.close()
-
     print "Test 2 - shared key faults"
     for fault in Fault.clientSharedKeyFaults + Fault.genericFaults:
         connection = connect()
@@ -376,15 +370,6 @@ def serverTest(address, dir):
 
     def connect():
         return TLSConnection(lsock.accept()[0])
-
-    print "Test 1 - good shared key"
-    sharedKeyDB = SharedKeyDB()
-    sharedKeyDB["shared"] = "key"
-    sharedKeyDB["shared2"] = "key2"
-    connection = connect()
-    connection.handshakeServer(sharedKeyDB=sharedKeyDB)
-    connection.close()
-    connection.sock.close()
 
     print "Test 2 - shared key faults"
     for fault in Fault.clientSharedKeyFaults + Fault.genericFaults:

@@ -45,4 +45,13 @@ class TestSRP(unittest.TestCase):
                 cc.handshakeClientSRP("test", "password")
                 cc.close()
                 cc.sock.close()
-        
+
+    def test_unknown_srp_username(self):
+        with ServerThread(self.server, self.__server_srp):
+            def srpCallback():
+                return ("test", "password")
+            cc = self.client.connect()
+            cc.handshakeClientUnknown(srpCallback=srpCallback)
+            cc.close()
+            cc.sock.close()
+

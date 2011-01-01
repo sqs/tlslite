@@ -20,6 +20,10 @@ class TestServer(TestEndpoint):
     def connect(self):
         return TLSConnection(self.lsock.accept()[0])
 
+    def close(self):
+        self.lsock.close()
+
+
 class TestClient(TestEndpoint):
     def __init__(self, *args):
         TestEndpoint.__init__(self, *args)
@@ -42,5 +46,3 @@ class ServerThread(threading.Thread):
 
     def __exit__(self, *args):
         self.join()
-        
-        

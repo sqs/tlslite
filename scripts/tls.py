@@ -74,18 +74,6 @@ def clientTest(address, dir):
             badFault = True
         connection.sock.close()
 
-    print "Test 7 - X.509 with SRP faults"
-    for fault in Fault.clientSrpFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeClientSRP("test", "password")
-            print "  Good Fault %s" % (Fault.faultNames[fault])
-        except TLSFaultError, e:
-            print "  BAD FAULT %s: %s" % (Fault.faultNames[fault], str(e))
-            badFault = True
-        connection.sock.close()
-
     if cryptoIDlibLoaded:
         print "Test 8 - good SRP: with cryptoID certificate chain"
         connection = connect()
@@ -404,18 +392,6 @@ def serverTest(address, dir):
         connection.fault = fault
         try:
             connection.handshakeServer(sharedKeyDB=sharedKeyDB)
-            assert()
-        except:
-            pass
-        connection.sock.close()
-
-    print "Test 7 - X.509 with SRP faults"
-    for fault in Fault.clientSrpFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeServer(verifierDB=verifierDB, \
-                                       certChain=x509Chain, privateKey=x509Key)
             assert()
         except:
             pass

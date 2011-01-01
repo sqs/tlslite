@@ -76,4 +76,12 @@ class TestSRP(unittest.TestCase):
             cc.close()
             cc.sock.close()
 
+    def test_srp_x509_fault(self):
+        for fault in Fault.clientSrpFaults + Fault.genericFaults:
+            with ServerThread(self.server, self.__server_srp_x509):
+                cc = self.client.connect()
+                cc.fault = fault
+                cc.handshakeClientSRP("test", "password")
+                cc.close()
+                cc.sock.close()
 

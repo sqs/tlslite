@@ -74,13 +74,6 @@ def clientTest(address, dir):
             badFault = True
         connection.sock.close()
 
-    print "Test 6 - good SRP: with X.509 certificate"
-    connection = connect()
-    connection.handshakeClientSRP("test", "password")
-    assert(isinstance(connection.session.serverCertChain, X509CertChain))
-    connection.close()
-    connection.sock.close()
-
     print "Test 7 - X.509 with SRP faults"
     for fault in Fault.clientSrpFaults + Fault.genericFaults:
         connection = connect()
@@ -415,18 +408,6 @@ def serverTest(address, dir):
         except:
             pass
         connection.sock.close()
-
-    print "Test 6 - good SRP: with X.509 cert"
-    x509Cert = X509().parse(open(os.path.join(dir, "serverX509Cert.pem")).read())
-    x509Chain = X509CertChain([x509Cert])
-    s = open(os.path.join(dir, "serverX509Key.pem")).read()
-    x509Key = parsePEMKey(s, private=True)
-
-    connection = connect()
-    connection.handshakeServer(verifierDB=verifierDB, \
-                               certChain=x509Chain, privateKey=x509Key)
-    connection.close()
-    connection.sock.close()
 
     print "Test 7 - X.509 with SRP faults"
     for fault in Fault.clientSrpFaults + Fault.genericFaults:

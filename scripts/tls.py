@@ -100,40 +100,6 @@ def clientTest(address, dir):
                 badFault = True
             connection.sock.close()
 
-    print "Test 14 - good mutual X509"
-    x509Cert = X509().parse(open(os.path.join(dir, "clientX509Cert.pem")).read())
-    x509Chain = X509CertChain([x509Cert])
-    s = open(os.path.join(dir, "clientX509Key.pem")).read()
-    x509Key = parsePEMKey(s, private=True)
-
-    connection = connect()
-    connection.handshakeClientCert(x509Chain, x509Key)
-    assert(isinstance(connection.session.serverCertChain, X509CertChain))
-    connection.close()
-    connection.sock.close()
-
-    print "Test 14.a - good mutual X509, SSLv3"
-    connection = connect()
-    settings = HandshakeSettings()
-    settings.minVersion = (3,0)
-    settings.maxVersion = (3,0)
-    connection.handshakeClientCert(x509Chain, x509Key, settings=settings)
-    assert(isinstance(connection.session.serverCertChain, X509CertChain))
-    connection.close()
-    connection.sock.close()
-
-    print "Test 15 - mutual X.509 faults"
-    for fault in Fault.clientCertFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeClientCert(x509Chain, x509Key)
-            print "  Good Fault %s" % (Fault.faultNames[fault])
-        except TLSFaultError, e:
-            print "  BAD FAULT %s: %s" % (Fault.faultNames[fault], str(e))
-            badFault = True
-        connection.sock.close()
-
     if cryptoIDlibLoaded:
         print "Test 16 - good mutual cryptoID"
         cryptoIDChain = CertChain().parse(open(os.path.join(dir, "serverCryptoIDChain.xml"), "r").read())
@@ -369,34 +335,6 @@ def serverTest(address, dir):
             except:
                 pass
             connection.sock.close()
-
-    print "Test 14 - good mutual X.509"
-    connection = connect()
-    connection.handshakeServer(certChain=x509Chain, privateKey=x509Key, reqCert=True)
-    assert(isinstance(connection.session.serverCertChain, X509CertChain))
-    connection.close()
-    connection.sock.close()
-
-    print "Test 14a - good mutual X.509, SSLv3"
-    connection = connect()
-    settings = HandshakeSettings()
-    settings.minVersion = (3,0)
-    settings.maxVersion = (3,0)
-    connection.handshakeServer(certChain=x509Chain, privateKey=x509Key, reqCert=True, settings=settings)
-    assert(isinstance(connection.session.serverCertChain, X509CertChain))
-    connection.close()
-    connection.sock.close()
-
-    print "Test 15 - mutual X.509 faults"
-    for fault in Fault.clientCertFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeServer(certChain=x509Chain, privateKey=x509Key, reqCert=True)
-            assert()
-        except:
-            pass
-        connection.sock.close()
 
     if cryptoIDlibLoaded:
         print "Test 16 - good mutual cryptoID"

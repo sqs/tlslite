@@ -15,7 +15,11 @@ class TestServer(TestEndpoint):
     def __init__(self, *args):
         TestEndpoint.__init__(self, *args)
         self.lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.lsock.bind((self.addr, self.port))
+        try:
+            self.lsock.bind((self.addr, self.port))
+        except:
+            print "Couldn't bind TestServer to %s:%d" % (self.addr, self.port)
+            raise
         self.lsock.listen(TIMEOUT)
 
     def connect(self):

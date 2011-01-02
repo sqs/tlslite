@@ -36,16 +36,16 @@ class HMAC:
             return      #TREVNEW
 
         self.digestmod = digestmod
-        self.outer = digestmod.new()
-        self.inner = digestmod.new()
-        self.digest_size = digestmod.digest_size
+        self.outer = digestmod()
+        self.inner = digestmod()
+        self.digest_size = digestmod().digest_size
 
         blocksize = 64
         ipad = "\x36" * blocksize
         opad = "\x5C" * blocksize
 
         if len(key) > blocksize:
-            key = digestmod.new(key).digest()
+            key = digestmod(key).digest()
 
         key = key + chr(0) * (blocksize - len(key))
         self.outer.update(_strxor(key, opad))

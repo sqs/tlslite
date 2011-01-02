@@ -1,11 +1,12 @@
-import socket, threading
+import socket, threading, random
 
 from tlslite.api import *
 
 TIMEOUT = 1 # secs
+SERVER_PORT = random.randint(10000, 15000)
 
 class TestEndpoint(object):
-    def __init__(self, addr='127.0.0.1', port=4443):
+    def __init__(self, addr='127.0.0.1', port=SERVER_PORT):
         self.addr = addr
         self.port = port
 

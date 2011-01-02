@@ -40,10 +40,10 @@ class TestClient(TestEndpoint):
         return TLSConnection(sock)
 
 class ServerThread(threading.Thread):
-    def __init__(self, server, f):
+    def __init__(self, server, f, *args):
         threading.Thread.__init__(self)
         self.server = server
-        self.run = f
+        self.run = lambda: f(*args)
 
     def __enter__(self):
         self.start()

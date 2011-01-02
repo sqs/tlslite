@@ -79,13 +79,6 @@ def clientTest(address, dir):
                 badFault = True
             connection.sock.close()
 
-    print "Test 10 - good X509"
-    connection = connect()
-    connection.handshakeClientCert()
-    assert(isinstance(connection.session.serverCertChain, X509CertChain))
-    connection.close()
-    connection.sock.close()
-
     print "Test 10.a - good X509, SSLv3"
     connection = connect()
     settings = HandshakeSettings()
@@ -380,12 +373,6 @@ def serverTest(address, dir):
             except:
                 pass
             connection.sock.close()
-
-    print "Test 10 - good X.509"
-    connection = connect()
-    connection.handshakeServer(certChain=x509Chain, privateKey=x509Key)
-    connection.close()
-    connection.sock.close()
 
     print "Test 10.a - good X.509, SSL v3"
     connection = connect()

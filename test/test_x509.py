@@ -25,10 +25,29 @@ class TestX509(unittest.TestCase):
                            privateKey=self.x509Key)
         sc.close()
         sc.sock.close()
-        
+
+    def __server_x509_sslv3(self):
+        sc = self.server.connect()
+        settings = HandshakeSettings()
+        settings.minVersion = (3,0)
+        settings.maxVersion = (3,0)
+        sc.handshakeServer(certChain=self.x509Chain,
+                           privateKey=self.x509Key,
+                           settings=settings)
+        sc.close()
+        sc.sock.close()
+
     def test_good_x509(self):
         with ServerThread(self.server, self.__server_x509):
             with TestClient() as cc:
                 cc.handshakeClientCert()
                 assert(isinstance(cc.session.serverCertChain, X509CertChain))
 
+    def test_good_x509_sslv3(self):
+        with ServerThread(self.server, self.__server_x509_sslv3):
+            with TestClient() as cc:
+                settings = HandshakeSettings()
+                settings.minVersion = (3,0)
+                settings.maxVersion = (3,0)
+                cc.handshakeClientCert(settings=settings)
+                self.assertTrue(isinstance(cc.session.serverCertChain, X509CertChain))

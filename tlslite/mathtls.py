@@ -119,9 +119,9 @@ class MAC_SSL:
             return      #TREVNEW
 
         self.digestmod = digestmod
-        self.outer = digestmod.new()
-        self.inner = digestmod.new()
-        self.digest_size = digestmod.digest_size
+        self.outer = digestmod()
+        self.inner = digestmod()
+        self.digest_size = digestmod().digest_size
 
         ipad = "\x36" * 40
         opad = "\x5C" * 40

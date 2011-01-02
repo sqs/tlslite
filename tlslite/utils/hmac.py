@@ -29,8 +29,8 @@ class HMAC:
         digestmod: A module supporting PEP 247. Defaults to the md5 module.
         """
         if digestmod is None:
-            import md5
-            digestmod = md5
+            import hashlib
+            digestmod = hashlib.md5
 
         if key == None: #TREVNEW - for faster copying
             return      #TREVNEW

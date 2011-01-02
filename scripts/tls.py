@@ -79,18 +79,6 @@ def clientTest(address, dir):
                 badFault = True
             connection.sock.close()
 
-    print "Test 11 - X.509 faults"
-    for fault in Fault.clientNoAuthFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeClientCert()
-            print "  Good Fault %s" % (Fault.faultNames[fault])
-        except TLSFaultError, e:
-            print "  BAD FAULT %s: %s" % (Fault.faultNames[fault], str(e))
-            badFault = True
-        connection.sock.close()
-
     if cryptoIDlibLoaded:
         print "Test 12 - good cryptoID"
         connection = connect()
@@ -363,17 +351,6 @@ def serverTest(address, dir):
             except:
                 pass
             connection.sock.close()
-
-    print "Test 11 - X.509 faults"
-    for fault in Fault.clientNoAuthFaults + Fault.genericFaults:
-        connection = connect()
-        connection.fault = fault
-        try:
-            connection.handshakeServer(certChain=x509Chain, privateKey=x509Key)
-            assert()
-        except:
-            pass
-        connection.sock.close()
 
     if cryptoIDlibLoaded:
         print "Test 12 - good cryptoID"

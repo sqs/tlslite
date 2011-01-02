@@ -37,6 +37,14 @@ class TestX509(unittest.TestCase):
         sc.close()
         sc.sock.close()
 
+    def __server_x509_fault(self, fault):
+        sc = self.server.connect()
+        sc.fault = fault
+        sc.handshakeServer(certChain=self.x509Chain,
+                           privateKey=self.x509Key)
+        sc.close()
+        sc.sock.close()
+
     def test_good_x509(self):
         with ServerThread(self.server, self.__server_x509):
             with TestClient() as cc:
@@ -51,3 +59,15 @@ class TestX509(unittest.TestCase):
                 settings.maxVersion = (3,0)
                 cc.handshakeClientCert(settings=settings)
                 self.assertTrue(isinstance(cc.session.serverCertChain, X509CertChain))
+
+    def test_x509_fault(self):
+        for fault in Fault.clientNoAuthFaults + Fault.genericFaults:
+            with ServerThread(self.server, self.__server_x509_fault, fault):
+                with TestClient() as cc:
+                    cc.fault = fault
+                    try:
+                        cc.handshakeClientCert()
+                    except TLSFaultError as e:
+                        print "Bad fault: %s %s" % (Fault.faultNames[fault], str(e))
+                        raise e
+

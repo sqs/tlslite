@@ -3,7 +3,7 @@ import unittest, os, sys
 from .clientserver import *
 from tlslite.api import *
 
-class TestSRP(unittest.TestCase):
+class TestSharedKey(unittest.TestCase):
     def setUp(self):
         self.client = TestClient()
         self.server = TestServer()

@@ -1,6 +1,7 @@
 import unittest, os, sys
 
 from .clientserver import *
+from .helpers import *
 from tlslite.api import *
 
 class TestSRP(unittest.TestCase):
@@ -25,15 +26,10 @@ class TestSRP(unittest.TestCase):
         sc.sock.close()
 
     def __server_srp_x509(self):
-        mydir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
-        x509Cert = X509().parse(open(os.path.join(mydir, "serverX509Cert.pem")).read())
-        x509Chain = X509CertChain([x509Cert])
-        s = open(os.path.join(mydir, "serverX509Key.pem")).read()
-        x509Key = parsePEMKey(s, private=True)
-
+        x = get_x509("serverX509Cert.pem", "serverX509Key.pem")
         sc = self.server.connect()
         sc.handshakeServer(verifierDB=self.verifierDB, \
-                               certChain=x509Chain, privateKey=x509Key)
+                               certChain=x[1], privateKey=x[2])
         sc.close()
         sc.sock.close()
         

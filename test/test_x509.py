@@ -1,31 +1,18 @@
 import unittest, os, sys
 
 from .clientserver import *
+from .helpers import *
 from tlslite.api import *
 
-class TestX509(unittest.TestCase):
+class TestX509(unittest.TestCase, X509Mixin):
     def setUp(self):
         incr_server_port()
         self.server = TestServer()
-        self.__make_server_x509()
-        self.__make_client_x509()
+        self.make_server_x509()
+        self.make_client_x509()
 
     def tearDown(self):
         self.server.close()
-
-    def __make_server_x509(self):
-        mydir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
-        self.serverX509Cert = X509().parse(open(os.path.join(mydir, "serverX509Cert.pem")).read())
-        self.serverX509Chain = X509CertChain([self.serverX509Cert])
-        s = open(os.path.join(mydir, "serverX509Key.pem")).read()
-        self.serverX509Key = parsePEMKey(s, private=True)
-
-    def __make_client_x509(self):
-        mydir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
-        self.clientX509Cert = X509().parse(open(os.path.join(mydir, "clientX509Cert.pem")).read())
-        self.clientX509Chain = X509CertChain([self.clientX509Cert])
-        s = open(os.path.join(mydir, "clientX509Key.pem")).read()
-        self.clientX509Key = parsePEMKey(s, private=True)
 
     def __server_x509(self):
         sc = self.server.connect()

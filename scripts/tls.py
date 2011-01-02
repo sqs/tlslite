@@ -124,34 +124,6 @@ def clientTest(address, dir):
                 badFault = True
             connection.sock.close()
 
-    print "Test 21 - HTTPS test X.509"
-    address = address[0], address[1]+1
-    if hasattr(socket, "timeout"):
-        timeoutEx = socket.timeout
-    else:
-        timeoutEx = socket.error
-    while 1:
-        try:
-            time.sleep(2)
-            htmlBody = open(os.path.join(dir, "index.html")).read()
-            fingerprint = None
-            for y in range(2):
-                h = HTTPTLSConnection(\
-                        address[0], address[1], x509Fingerprint=fingerprint)
-                for x in range(3):
-                    h.request("GET", "/index.html")
-                    r = h.getresponse()
-                    assert(r.status == 200)
-                    s = r.read()
-                    assert(s == htmlBody)
-                fingerprint = h.tlsSession.serverCertChain.getFingerprint()
-                assert(fingerprint)
-            time.sleep(2)
-            break
-        except timeoutEx:
-            print "timeout, retrying..."
-            pass
-
     if cryptoIDlibLoaded:
         print "Test 21a - HTTPS test SRP+cryptoID"
         address = address[0], address[1]+1
@@ -332,26 +304,6 @@ def serverTest(address, dir):
             except:
                 pass
             connection.sock.close()
-
-    print "Test 21 - HTTPS test X.509"
-
-    #Close the current listening socket
-    lsock.close()
-
-    #Create and run an HTTP Server using TLSSocketServerMixIn
-    class MyHTTPServer(TLSSocketServerMixIn,
-                       BaseHTTPServer.HTTPServer):
-        def handshake(self, tlsConnection):
-                tlsConnection.handshakeServer(certChain=x509Chain, privateKey=x509Key)
-                return True
-    cd = os.getcwd()
-    os.chdir(dir)
-    address = address[0], address[1]+1
-    httpd = MyHTTPServer(address, SimpleHTTPServer.SimpleHTTPRequestHandler)
-    for x in range(6):
-        httpd.handle_request()
-    httpd.server_close()
-    cd = os.chdir(cd)
 
     if cryptoIDlibLoaded:
         print "Test 21a - HTTPS test SRP+cryptoID"

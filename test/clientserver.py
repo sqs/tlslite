@@ -1,6 +1,7 @@
-import socket, threading, random
+import socket, threading, random, BaseHTTPServer
 
 from tlslite.api import *
+from .helpers import *
 
 TIMEOUT = 1 # secs
 config = dict(server_port=random.randint(10000, 15000))
@@ -63,3 +64,10 @@ class ServerThread(threading.Thread):
 
     def __exit__(self, *args):
         self.join()
+
+class MyHTTPServer(TLSSocketServerMixIn,
+                   BaseHTTPServer.HTTPServer):
+    def handshake(self, tlsConnection):
+        x = get_x509("serverX509Cert.pem", "serverX509Key.pem")
+        tlsConnection.handshakeServer(certChain=x[1], privateKey=x[2])
+        return True

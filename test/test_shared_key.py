@@ -5,8 +5,10 @@ from tlslite.api import *
 
 class TestSharedKey(unittest.TestCase):
     def setUp(self):
-        self.client = TestClient()
-        self.server = TestServer()
+        global SERVER_PORT
+        SERVER_PORT += 1
+        self.server = TestServer('127.0.0.1', SERVER_PORT)
+        self.client = TestClient('127.0.0.1', SERVER_PORT)
         self.__make_shared_key_db()
 
     def tearDown(self):

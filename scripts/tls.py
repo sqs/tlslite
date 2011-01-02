@@ -159,34 +159,6 @@ def clientTest(address, dir):
 
     address = address[0], address[1]+1
 
-    implementations = []
-    if cryptlibpyLoaded:
-        implementations.append("cryptlib")
-    if m2cryptoLoaded:
-        implementations.append("openssl")
-    if pycryptoLoaded:
-        implementations.append("pycrypto")
-    implementations.append("python")
-
-    print "Test 22 - different ciphers"
-    for implementation in implementations:
-        for cipher in ["aes128", "aes256", "rc4"]:
-
-            print "Test 22:",
-            connection = connect()
-
-            settings = HandshakeSettings()
-            settings.cipherNames = [cipher]
-            settings.cipherImplementations = [implementation, "python"]
-            connection.handshakeClientSharedKey("shared", "key", settings=settings)
-            print ("%s %s" % (connection.getCipherName(), connection.getCipherImplementation()))
-
-            connection.write("hello")
-            h = connection.read(min=5, max=5)
-            assert(h == "hello")
-            connection.close()
-            connection.sock.close()
-
     print "Test 23 - throughput test"
     for implementation in implementations:
         for cipher in ["aes128", "aes256", "3des", "rc4"]:
@@ -332,34 +304,6 @@ def serverTest(address, dir):
 
     def connect():
         return TLSConnection(lsock.accept()[0])
-
-    implementations = []
-    if cryptlibpyLoaded:
-        implementations.append("cryptlib")
-    if m2cryptoLoaded:
-        implementations.append("openssl")
-    if pycryptoLoaded:
-        implementations.append("pycrypto")
-    implementations.append("python")
-
-    print "Test 22 - different ciphers"
-    for implementation in ["python"] * len(implementations):
-        for cipher in ["aes128", "aes256", "rc4"]:
-
-            print "Test 22:",
-            connection = connect()
-
-            settings = HandshakeSettings()
-            settings.cipherNames = [cipher]
-            settings.cipherImplementations = [implementation, "python"]
-
-            connection.handshakeServer(sharedKeyDB=sharedKeyDB, settings=settings)
-            print connection.getCipherName(), connection.getCipherImplementation()
-            h = connection.read(min=5, max=5)
-            assert(h == "hello")
-            connection.write(h)
-            connection.close()
-            connection.sock.close()
 
     print "Test 23 - throughput test"
     for implementation in implementations:

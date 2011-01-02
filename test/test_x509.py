@@ -5,10 +5,8 @@ from tlslite.api import *
 
 class TestX509(unittest.TestCase):
     def setUp(self):
-        global SERVER_PORT
-        SERVER_PORT += 1
-        self.server = TestServer('127.0.0.1', SERVER_PORT)
-        self.client = TestClient('127.0.0.1', SERVER_PORT)
+        incr_server_port()
+        self.server = TestServer()
         self.__make_x509()
 
     def tearDown(self):
@@ -30,8 +28,7 @@ class TestX509(unittest.TestCase):
         
     def test_good_x509(self):
         with ServerThread(self.server, self.__server_x509):
-            cc = self.client.connect()
-            cc.handshakeClientCert()
-            assert(isinstance(cc.session.serverCertChain, X509CertChain))
-            cc.close()
-            cc.sock.close()
+            with TestClient() as cc:
+                cc.handshakeClientCert()
+                assert(isinstance(cc.session.serverCertChain, X509CertChain))
+

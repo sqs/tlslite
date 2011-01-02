@@ -5,10 +5,8 @@ from tlslite.api import *
 
 class TestSRP(unittest.TestCase):
     def setUp(self):
-        global SERVER_PORT
-        SERVER_PORT += 1
-        self.server = TestServer('127.0.0.1', SERVER_PORT)
-        self.client = TestClient('127.0.0.1', SERVER_PORT)
+        incr_server_port()
+        self.server = TestServer()
         self.__make_verifier_db()
 
     def tearDown(self):
@@ -41,10 +39,8 @@ class TestSRP(unittest.TestCase):
         
     def test_good_srp(self):
         with ServerThread(self.server, self.__server_srp):
-            cc = self.client.connect()
-            cc.handshakeClientSRP("test", "password")
-            cc.close()
-            cc.sock.close()
+            with TestClient() as cc:
+                cc.handshakeClientSRP("test", "password")
 
     def test_srp_fault(self):
         def server_srp_fault():
@@ -55,35 +51,26 @@ class TestSRP(unittest.TestCase):
 
         for fault in Fault.clientSrpFaults + Fault.genericFaults:
             with ServerThread(self.server, server_srp_fault):
-                cc = self.client.connect()
-                cc.fault = fault
-                cc.handshakeClientSRP("test", "password")
-                cc.close()
-                cc.sock.close()
+                with TestClient() as cc:
+                    cc.fault = fault
+                    cc.handshakeClientSRP("test", "password")
 
     def test_unknown_srp_username(self):
         with ServerThread(self.server, self.__server_srp):
             def srpCallback():
                 return ("test", "password")
-            cc = self.client.connect()
-            cc.handshakeClientUnknown(srpCallback=srpCallback)
-            cc.close()
-            cc.sock.close()
+            with TestClient() as cc:
+                cc.handshakeClientUnknown(srpCallback=srpCallback)
 
     def test_srp_x509(self):
         with ServerThread(self.server, self.__server_srp_x509):
-            cc = self.client.connect()
-            cc.handshakeClientSRP("test", "password")
-            assert(isinstance(cc.session.serverCertChain, X509CertChain))
-            cc.close()
-            cc.sock.close()
+            with TestClient() as cc:
+                cc.handshakeClientSRP("test", "password")
+                assert(isinstance(cc.session.serverCertChain, X509CertChain))
 
     def test_srp_x509_fault(self):
         for fault in Fault.clientSrpFaults + Fault.genericFaults:
             with ServerThread(self.server, self.__server_srp_x509):
-                cc = self.client.connect()
-                cc.fault = fault
-                cc.handshakeClientSRP("test", "password")
-                cc.close()
-                cc.sock.close()
-
+                with TestClient() as cc:
+                    cc.fault = fault
+                    cc.handshakeClientSRP("test", "password")

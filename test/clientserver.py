@@ -3,12 +3,16 @@ import socket, threading, random
 from tlslite.api import *
 
 TIMEOUT = 1 # secs
-SERVER_PORT = random.randint(10000, 15000)
+config = dict(server_port=random.randint(10000, 15000))
+
+def incr_server_port():
+    config['server_port'] += 1
 
 class TestEndpoint(object):
-    def __init__(self, addr='127.0.0.1', port=SERVER_PORT):
+    def __init__(self, addr='127.0.0.1', port=None):
+        global SERVER_PORT
         self.addr = addr
-        self.port = port
+        self.port = port if port else config['server_port']
 
         
 class TestServer(TestEndpoint):
@@ -38,6 +42,14 @@ class TestClient(TestEndpoint):
         sock.settimeout(TIMEOUT)
         sock.connect((self.addr, self.port))
         return TLSConnection(sock)
+
+    def __enter__(self):
+        self.cc = self.connect()
+        return self.cc
+
+    def __exit__(self, *args):
+        self.cc.close()
+        self.cc.sock.close()
 
 class ServerThread(threading.Thread):
     def __init__(self, server, f, *args):

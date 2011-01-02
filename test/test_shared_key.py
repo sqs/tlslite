@@ -5,10 +5,8 @@ from tlslite.api import *
 
 class TestSharedKey(unittest.TestCase):
     def setUp(self):
-        global SERVER_PORT
-        SERVER_PORT += 1
-        self.server = TestServer('127.0.0.1', SERVER_PORT)
-        self.client = TestClient('127.0.0.1', SERVER_PORT)
+        incr_server_port()
+        self.server = TestServer()
         self.__make_shared_key_db()
 
     def tearDown(self):
@@ -34,26 +32,21 @@ class TestSharedKey(unittest.TestCase):
 
     def test_good_shared_key(self):
         with ServerThread(self.server, self.__server_shared_key):
-            cc = self.client.connect()
-            cc.handshakeClientSharedKey("shared", "key")
-            cc.close()
-            cc.sock.close()
+            with TestClient() as cc:
+                cc.handshakeClientSharedKey("shared", "key")
 
     def test_shared_key_fault(self):
         for fault in Fault.clientSharedKeyFaults + Fault.genericFaults:
             with ServerThread(self.server, self.__server_shared_key_fault, fault):
-                cc = self.client.connect()
-                cc.fault = fault
-                good_fault = False
-                try:
-                    cc.handshakeClientSharedKey("shared", "key")
-                    good_fault = True
-                except TLSFaultError as e:
-                    print "Bad fault: %s %s" % (Fault.faultNames[fault],
+                with TestClient() as cc:
+                    cc.fault = fault
+                    good_fault = False
+                    try:
+                        cc.handshakeClientSharedKey("shared", "key")
+                        good_fault = True
+                    except TLSFaultError as e:
+                        print "Bad fault: %s %s" % (Fault.faultNames[fault],
                                                 str(e))
-                    raise e
-                finally:
-                    cc.close()
-                    cc.sock.close()
-                self.assertTrue(good_fault)
+                        raise e
+                    self.assertTrue(good_fault)
 

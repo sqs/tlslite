@@ -124,29 +124,6 @@ def clientTest(address, dir):
                 badFault = True
             connection.sock.close()
 
-    print "Test 18 - good SRP, prepare to resume..."
-    connection = connect()
-    connection.handshakeClientSRP("test", "password")
-    connection.close()
-    connection.sock.close()
-    session = connection.session
-
-    print "Test 19 - resumption"
-    connection = connect()
-    connection.handshakeClientSRP("test", "garbage", session=session)
-    #Don't close! -- see below
-
-    print "Test 20 - invalidated resumption"
-    connection.sock.close() #Close the socket without a close_notify!
-    connection = connect()
-    try:
-        connection.handshakeClientSRP("test", "garbage", session=session)
-        assert()
-    except TLSRemoteAlert, alert:
-        if alert.description != AlertDescription.bad_record_mac:
-            raise
-    connection.sock.close()
-
     print "Test 21 - HTTPS test X.509"
     address = address[0], address[1]+1
     if hasattr(socket, "timeout"):
@@ -355,32 +332,6 @@ def serverTest(address, dir):
             except:
                 pass
             connection.sock.close()
-
-    print "Test 18 - good SRP, prepare to resume"
-    sessionCache = SessionCache()
-    connection = connect()
-    connection.handshakeServer(verifierDB=verifierDB, sessionCache=sessionCache)
-    connection.close()
-    connection.sock.close()
-
-    print "Test 19 - resumption"
-    connection = connect()
-    connection.handshakeServer(verifierDB=verifierDB, sessionCache=sessionCache)
-    #Don't close! -- see next test
-
-    print "Test 20 - invalidated resumption"
-    try:
-        connection.read(min=1, max=1)
-        assert() #Client is going to close the socket without a close_notify
-    except TLSAbruptCloseError, e:
-        pass
-    connection = connect()
-    try:
-        connection.handshakeServer(verifierDB=verifierDB, sessionCache=sessionCache)
-    except TLSLocalAlert, alert:
-        if alert.description != AlertDescription.bad_record_mac:
-            raise
-    connection.sock.close()
 
     print "Test 21 - HTTPS test X.509"
 

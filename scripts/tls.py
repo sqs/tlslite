@@ -11,12 +11,6 @@ import BaseHTTPServer
 import SimpleHTTPServer
 
 
-try:
-    from cryptoIDlib.api import *
-    cryptoIDlibLoaded = True
-except:
-    cryptoIDlibLoaded = False
-
 if __name__ != "__main__":
     raise "This must be run as a command, not used as a module!"
 
@@ -55,109 +49,6 @@ def clientTest(address, dir):
     test = 0
 
     badFault = False
-
-    if cryptoIDlibLoaded:
-        print "Test 8 - good SRP: with cryptoID certificate chain"
-        connection = connect()
-        connection.handshakeClientSRP("test", "password")
-        assert(isinstance(connection.session.serverCertChain, CertChain))
-        if not (connection.session.serverCertChain.validate()):
-            print connection.session.serverCertChain.validate(listProblems=True)
-
-        connection.close()
-        connection.sock.close()
-
-        print "Test 9 - CryptoID with SRP faults"
-        for fault in Fault.clientSrpFaults + Fault.genericFaults:
-            connection = connect()
-            connection.fault = fault
-            try:
-                connection.handshakeClientSRP("test", "password")
-                print "  Good Fault %s" % (Fault.faultNames[fault])
-            except TLSFaultError, e:
-                print "  BAD FAULT %s: %s" % (Fault.faultNames[fault], str(e))
-                badFault = True
-            connection.sock.close()
-
-    if cryptoIDlibLoaded:
-        print "Test 12 - good cryptoID"
-        connection = connect()
-        connection.handshakeClientCert()
-        assert(isinstance(connection.session.serverCertChain, CertChain))
-        assert(connection.session.serverCertChain.validate())
-        connection.close()
-        connection.sock.close()
-
-        print "Test 13 - cryptoID faults"
-        for fault in Fault.clientNoAuthFaults + Fault.genericFaults:
-            connection = connect()
-            connection.fault = fault
-            try:
-                connection.handshakeClientCert()
-                print "  Good Fault %s" % (Fault.faultNames[fault])
-            except TLSFaultError, e:
-                print "  BAD FAULT %s: %s" % (Fault.faultNames[fault], str(e))
-                badFault = True
-            connection.sock.close()
-
-    if cryptoIDlibLoaded:
-        print "Test 16 - good mutual cryptoID"
-        cryptoIDChain = CertChain().parse(open(os.path.join(dir, "serverCryptoIDChain.xml"), "r").read())
-        cryptoIDKey = parseXMLKey(open(os.path.join(dir, "serverCryptoIDKey.xml"), "r").read(), private=True)
-
-        connection = connect()
-        connection.handshakeClientCert(cryptoIDChain, cryptoIDKey)
-        assert(isinstance(connection.session.serverCertChain, CertChain))
-        assert(connection.session.serverCertChain.validate())
-        connection.close()
-        connection.sock.close()
-
-        print "Test 17 - mutual cryptoID faults"
-        for fault in Fault.clientCertFaults + Fault.genericFaults:
-            connection = connect()
-            connection.fault = fault
-            try:
-                connection.handshakeClientCert(cryptoIDChain, cryptoIDKey)
-                print "  Good Fault %s" % (Fault.faultNames[fault])
-            except TLSFaultError, e:
-                print "  BAD FAULT %s: %s" % (Fault.faultNames[fault], str(e))
-                badFault = True
-            connection.sock.close()
-
-    if cryptoIDlibLoaded:
-        print "Test 21a - HTTPS test SRP+cryptoID"
-        address = address[0], address[1]+1
-        if hasattr(socket, "timeout"):
-            timeoutEx = socket.timeout
-        else:
-            timeoutEx = socket.error
-        while 1:
-            try:
-                time.sleep(2) #Time to generate key and cryptoID
-                htmlBody = open(os.path.join(dir, "index.html")).read()
-                fingerprint = None
-                protocol = None
-                for y in range(2):
-                    h = HTTPTLSConnection(\
-                                 address[0], address[1],
-                                 username="test", password="password",
-                                 cryptoID=fingerprint, protocol=protocol)
-                    for x in range(3):
-                        h.request("GET", "/index.html")
-                        r = h.getresponse()
-                        assert(r.status == 200)
-                        s = r.read()
-                        assert(s == htmlBody)
-                    fingerprint = h.tlsSession.serverCertChain.cryptoID
-                    assert(fingerprint)
-                    protocol = "urn:whatever"
-                time.sleep(2)
-                break
-            except timeoutEx:
-                print "timeout, retrying..."
-                pass
-
-    address = address[0], address[1]+1
 
     print "Test 23 - throughput test"
     for implementation in implementations:
@@ -211,94 +102,6 @@ def serverTest(address, dir):
 
     #Connect to server
     lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    lsock.bind(address)
-    lsock.listen(5)
-
-    def connect():
-        return TLSConnection(lsock.accept()[0])
-
-    if cryptoIDlibLoaded:
-        print "Test 8 - good SRP: with cryptoID certs"
-        cryptoIDChain = CertChain().parse(open(os.path.join(dir, "serverCryptoIDChain.xml"), "r").read())
-        cryptoIDKey = parseXMLKey(open(os.path.join(dir, "serverCryptoIDKey.xml"), "r").read(), private=True)
-        connection = connect()
-        connection.handshakeServer(verifierDB=verifierDB, \
-                                   certChain=cryptoIDChain, privateKey=cryptoIDKey)
-        connection.close()
-        connection.sock.close()
-
-        print "Test 9 - cryptoID with SRP faults"
-        for fault in Fault.clientSrpFaults + Fault.genericFaults:
-            connection = connect()
-            connection.fault = fault
-            try:
-                connection.handshakeServer(verifierDB=verifierDB, \
-                                           certChain=cryptoIDChain, privateKey=cryptoIDKey)
-                assert()
-            except:
-                pass
-            connection.sock.close()
-
-    if cryptoIDlibLoaded:
-        print "Test 12 - good cryptoID"
-        connection = connect()
-        connection.handshakeServer(certChain=cryptoIDChain, privateKey=cryptoIDKey)
-        connection.close()
-        connection.sock.close()
-
-        print "Test 13 - cryptoID faults"
-        for fault in Fault.clientNoAuthFaults + Fault.genericFaults:
-            connection = connect()
-            connection.fault = fault
-            try:
-                connection.handshakeServer(certChain=cryptoIDChain, privateKey=cryptoIDKey)
-                assert()
-            except:
-                pass
-            connection.sock.close()
-
-    if cryptoIDlibLoaded:
-        print "Test 16 - good mutual cryptoID"
-        connection = connect()
-        connection.handshakeServer(certChain=cryptoIDChain, privateKey=cryptoIDKey, reqCert=True)
-        assert(isinstance(connection.session.serverCertChain, CertChain))
-        assert(connection.session.serverCertChain.validate())
-        connection.close()
-        connection.sock.close()
-
-        print "Test 17 - mutual cryptoID faults"
-        for fault in Fault.clientCertFaults + Fault.genericFaults:
-            connection = connect()
-            connection.fault = fault
-            try:
-                connection.handshakeServer(certChain=cryptoIDChain, privateKey=cryptoIDKey, reqCert=True)
-                assert()
-            except:
-                pass
-            connection.sock.close()
-
-    if cryptoIDlibLoaded:
-        print "Test 21a - HTTPS test SRP+cryptoID"
-
-        #Create and run an HTTP Server using TLSSocketServerMixIn
-        class MyHTTPServer(TLSSocketServerMixIn,
-                           BaseHTTPServer.HTTPServer):
-            def handshake(self, tlsConnection):
-                    tlsConnection.handshakeServer(certChain=cryptoIDChain, privateKey=cryptoIDKey,
-                                                  verifierDB=verifierDB)
-                    return True
-        cd = os.getcwd()
-        os.chdir(dir)
-        address = address[0], address[1]+1
-        httpd = MyHTTPServer(address, SimpleHTTPServer.SimpleHTTPRequestHandler)
-        for x in range(6):
-            httpd.handle_request()
-        httpd.server_close()
-        cd = os.chdir(cd)
-
-    #Re-connect the listening socket
-    lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    address = address[0], address[1]+1
     lsock.bind(address)
     lsock.listen(5)
 
@@ -362,10 +165,6 @@ if len(sys.argv) == 1 or (len(sys.argv)==2 and sys.argv[1].lower().endswith("hel
         print "  GMPY        : Loaded"
     else:
         print "  GMPY        : Not Loaded"
-    if cryptoIDlibLoaded:
-        print "  cryptoIDlib : Loaded"
-    else:
-        print "  cryptoIDlib : Not Loaded"
     print ""
     print "Commands:"
     print ""
@@ -452,15 +251,6 @@ try:
 
                     s1 = open(certFilename, "rb").read()
                     s2 = open(keyFilename, "rb").read()
-
-                    #Try to create cryptoID cert chain
-                    if cryptoIDlibLoaded:
-                        try:
-                            certChain = CertChain().parse(s1)
-                            privateKey = parsePrivateKey(s2)
-                        except:
-                            certChain = None
-                            privateKey = None
 
                     #Try to create X.509 cert chain
                     if not certChain:
@@ -572,15 +362,6 @@ try:
         if certFilename:
             s1 = open(certFilename, "rb").read()
             s2 = open(keyFilename, "rb").read()
-
-            #Try to create cryptoID cert chain
-            if cryptoIDlibLoaded:
-                try:
-                    certChain = CertChain().parse(s1)
-                    privateKey = parsePrivateKey(s2)
-                except:
-                    certChain = None
-                    privateKey = None
 
             #Try to create X.509 cert chain
             if not certChain:

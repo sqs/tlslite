@@ -7,22 +7,30 @@ class TestX509(unittest.TestCase):
     def setUp(self):
         incr_server_port()
         self.server = TestServer()
-        self.__make_x509()
+        self.__make_server_x509()
+        self.__make_client_x509()
 
     def tearDown(self):
         self.server.close()
 
-    def __make_x509(self):
+    def __make_server_x509(self):
         mydir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
-        self.x509Cert = X509().parse(open(os.path.join(mydir, "serverX509Cert.pem")).read())
-        self.x509Chain = X509CertChain([self.x509Cert])
+        self.serverX509Cert = X509().parse(open(os.path.join(mydir, "serverX509Cert.pem")).read())
+        self.serverX509Chain = X509CertChain([self.serverX509Cert])
         s = open(os.path.join(mydir, "serverX509Key.pem")).read()
-        self.x509Key = parsePEMKey(s, private=True)
+        self.serverX509Key = parsePEMKey(s, private=True)
+
+    def __make_client_x509(self):
+        mydir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
+        self.clientX509Cert = X509().parse(open(os.path.join(mydir, "clientX509Cert.pem")).read())
+        self.clientX509Chain = X509CertChain([self.clientX509Cert])
+        s = open(os.path.join(mydir, "clientX509Key.pem")).read()
+        self.clientX509Key = parsePEMKey(s, private=True)
 
     def __server_x509(self):
         sc = self.server.connect()
-        sc.handshakeServer(certChain=self.x509Chain,
-                           privateKey=self.x509Key)
+        sc.handshakeServer(certChain=self.serverX509Chain,
+                           privateKey=self.serverX509Key)
         sc.close()
         sc.sock.close()
 
@@ -31,8 +39,8 @@ class TestX509(unittest.TestCase):
         settings = HandshakeSettings()
         settings.minVersion = (3,0)
         settings.maxVersion = (3,0)
-        sc.handshakeServer(certChain=self.x509Chain,
-                           privateKey=self.x509Key,
+        sc.handshakeServer(certChain=self.serverX509Chain,
+                           privateKey=self.serverX509Key,
                            settings=settings)
         sc.close()
         sc.sock.close()
@@ -40,8 +48,8 @@ class TestX509(unittest.TestCase):
     def __server_x509_fault(self, fault):
         sc = self.server.connect()
         sc.fault = fault
-        sc.handshakeServer(certChain=self.x509Chain,
-                           privateKey=self.x509Key)
+        sc.handshakeServer(certChain=self.serverX509Chain,
+                           privateKey=self.serverX509Key)
         sc.close()
         sc.sock.close()
 

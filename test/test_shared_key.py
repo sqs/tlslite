@@ -1,21 +1,17 @@
 import unittest, os, sys
 
 from .clientserver import *
+from .helpers import *
 from tlslite.api import *
 
-class TestSharedKey(unittest.TestCase):
+class TestSharedKey(unittest.TestCase, SharedKeyMixin):
     def setUp(self):
         incr_server_port()
         self.server = TestServer()
-        self.__make_shared_key_db()
+        self.make_shared_key_db()
 
     def tearDown(self):
         self.server.close()
-
-    def __make_shared_key_db(self):
-        self.sharedKeyDB = SharedKeyDB()
-        self.sharedKeyDB["shared"] = "key"
-        self.sharedKeyDB["shared2"] = "key2"
 
     def __server_shared_key(self):
         sc = self.server.connect()

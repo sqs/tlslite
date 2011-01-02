@@ -1,6 +1,12 @@
 import os, sys
 from tlslite.api import *
 
+class SharedKeyMixin(object):
+    def make_shared_key_db(self):
+        self.sharedKeyDB = SharedKeyDB()
+        self.sharedKeyDB["shared"] = "key"
+        self.sharedKeyDB["shared2"] = "key2"
+
 def get_x509(cert, key):
     testdir = os.path.dirname(os.path.abspath(sys.modules[__name__].__file__))
     serverX509Cert = X509().parse(open(os.path.join(testdir, cert)).read())

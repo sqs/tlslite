@@ -277,7 +277,7 @@ try:
                 raise
             sys.exit()
         except TLSRemoteAlert, a:
-            if a.description == AlertDescription.unknown_srp_username:
+            if a.description == AlertDescription.unknown_psk_identity:
                 if cmd == "clientsrp":
                     print "Unknown username"
                 else:
@@ -402,7 +402,7 @@ try:
                         connection.write(s)
                         s = ""
             except TLSLocalAlert, a:
-                if a.description == AlertDescription.unknown_srp_username:
+                if a.description == AlertDescription.unknown_psk_identity:
                     print "Unknown SRP username"
                 elif a.description == AlertDescription.bad_record_mac:
                     if cmd == "serversrp" or cmd == "serversrpcert":

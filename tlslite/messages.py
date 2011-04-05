@@ -160,7 +160,7 @@ class ClientHello(HandshakeMsg):
                 while soFar != totalExtLength:
                     extType = p.get(2)
                     extLength = p.get(2)
-                    if extType == 6:
+                    if extType == ClientHelloExtension.srp:
                         self.srp_username = bytesToString(p.getVarBytes(1))
                     elif extType == 7:
                         self.certificate_types = p.getVarList(1, 1)
@@ -194,7 +194,7 @@ class ClientHello(HandshakeMsg):
             w.add(len(self.certificate_types)+1, 2)
             w.addVarSeq(self.certificate_types, 1, 1)
         if self.srp_username:
-            w.add(6, 2)
+            w.add(ClientHelloExtension.srp, 2)
             w.add(len(self.srp_username)+1, 2)
             w.addVarSeq(stringToBytes(self.srp_username), 1, 1)
 

@@ -51,7 +51,7 @@ class TestSRP(unittest.TestCase):
                     cc.fault = fault
                     cc.handshakeClientSRP("test", "password")
 
-    def test_unknown_srp_username(self):
+    def test_unknown_psk_identity(self):
         with ServerThread(self.server, self.__server_srp):
             def srpCallback():
                 return ("test", "password")
